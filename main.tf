@@ -53,7 +53,7 @@ resource "azurerm_app_service" "apps1" {
   location            = local.location                                                                  #(Required) Specifies the supported Azure location where the resource exists. Changing this forces a new resource to be created.
   app_service_plan_id = lookup(azurerm_app_service_plan.asp1, each.value["app_service_plan_key"])["id"] #(Required) The ID of the App Service Plan within which to create this App Service.
   app_settings        = lookup(each.value, "app_settings", null)                                        #(Optional) A key-value pair of App Settings.
-  /*auth_settings {
+  auth_settings {
     enabled = lookup(each.value, "enabled", false) #(Required) Is Authentication enabled?
     #active_directory {}
     additional_login_params        = lookup(each.value, "additional_login_params", null)        #(Optional) Login parameters to send to the OpenID Connect authorization endpoint when a user logs in. Each parameter must be in the form "key=value".
@@ -82,7 +82,7 @@ resource "azurerm_app_service" "apps1" {
 
     }
   }
-
+/*
   dynamic "connection_string" {
     for_each = lookup(each.value, "connection_strings", var.null_array)
     content {
@@ -92,10 +92,10 @@ resource "azurerm_app_service" "apps1" {
     }
   }
 
-  client_affinity_enabled = lookup(each.value, "", null) #(Optional) Should the App Service send session affinity cookies, which route client requests in the same session to the same instance?
-  client_cert_enabled     = lookup(each.value, "", null) #(Optional) Does the App Service require client certificates for incoming requests? Defaults to false.
-  enabled                 = lookup(each.value, "", null) #(Optional) Is the App Service Enabled?
-  https_only              = lookup(each.value, "", null) #(Optional) Can the App Service only be accessed via HTTPS? Defaults to false.
+  client_affinity_enabled = lookup(each.value, "client_affinity_enabled", null) #(Optional) Should the App Service send session affinity cookies, which route client requests in the same session to the same instance?
+  client_cert_enabled     = lookup(each.value, "client_cert_enabled", null) #(Optional) Does the App Service require client certificates for incoming requests? Defaults to false.
+  enabled                 = lookup(each.value, "enabled", null) #(Optional) Is the App Service Enabled?
+  https_only              = lookup(each.value, "https_only", null) #(Optional) Can the App Service only be accessed via HTTPS? Defaults to false.
 
   logs {
 
