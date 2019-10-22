@@ -30,6 +30,10 @@ variable "client_secret" {
 
 #Set resource variables
 
+variable "resource_group" {
+  description = "Resource group where the App Services resources will be created."
+}
+
 variable "app_service_plans" {
   default = {
 
@@ -71,9 +75,10 @@ variable "app_service_additional_tags" {
   }
 }
 
+
 #Prerequisite
 data "azurerm_resource_group" "demo" {
-  name = "gal-jdld-app-sbx-rg1"
+  name = var.resource_group
 }
 
 #Call module/Resource
