@@ -78,7 +78,7 @@ data "azurerm_resource_group" "demo" {
 
 #Call module/Resource
 module "Az-AppService-Demo" {
-  source                      = "../../../Az-AppService/" #""JamesDLD/Az-AppService/azurerm"
+  source                      = "../../" #""JamesDLD/Az-AppService/azurerm"
   app_service_rg              = data.azurerm_resource_group.demo.name
   app_service_prefix          = "pythonhello"
   app_service_location        = data.azurerm_resource_group.demo.location
