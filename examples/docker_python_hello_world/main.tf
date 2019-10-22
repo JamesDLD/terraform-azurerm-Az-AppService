@@ -32,6 +32,7 @@ variable "client_secret" {
 
 variable "resource_group" {
   description = "Resource group where the App Services resources will be created."
+  default     = "gal-jdld-app-sbx-rg1"
 }
 
 variable "app_service_plans" {
@@ -65,6 +66,7 @@ variable "app_services" {
           linux_fx_version = "DOCKER|appsvcsample/python-helloworld:latest" #(Optional) Linux App Framework and version for the App Service. Possible options are a Docker container (DOCKER|<user/image:tag>), a base-64 encoded Docker Compose file (COMPOSE|${filebase64("compose.yml")}) or a base-64 encoded Kubernetes Manifest (KUBE|${filebase64("kubernetes.yml")}).
         },
       ]
+
     }
   }
 }
