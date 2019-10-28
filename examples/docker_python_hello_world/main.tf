@@ -1,6 +1,11 @@
 #Set the terraform backend
 terraform {
-  backend "local" {}
+  backend "azurerm" {
+    storage_account_name = "jdlddemosa1"
+    container_name       = "tfstate"
+    key                  = "Az-AppService.docker_python_hello_world.tfstate"
+    resource_group_name  = "gal-jdld-infra-sbx-rg1"
+  }
 }
 
 #Set the Provider
@@ -40,7 +45,7 @@ variable "app_service_plans" {
 
     asp1 = {
       id       = "1"        #(Mandatory)
-      prefix   = "jdld"     #(Mandatory)
+      prefix   = "hello"    #(Mandatory)
       kind     = "Linux"    #(Optional) The kind of the App Service Plan to create. Possible values are Windows (also available as App), Linux, elastic (for Premium Consumption) and FunctionApp (for a Consumption Plan). Defaults to Windows. Changing this forces a new resource to be created.
       sku_tier = "Standard" #(Required) Specifies the plan's pricing tier.
       sku_size = "S1"       #(Required) Specifies the plan's instance size.
@@ -66,7 +71,6 @@ variable "app_services" {
           linux_fx_version = "DOCKER|appsvcsample/python-helloworld:latest" #(Optional) Linux App Framework and version for the App Service. Possible options are a Docker container (DOCKER|<user/image:tag>), a base-64 encoded Docker Compose file (COMPOSE|${filebase64("compose.yml")}) or a base-64 encoded Kubernetes Manifest (KUBE|${filebase64("kubernetes.yml")}).
         },
       ]
-
     }
   }
 }
@@ -87,7 +91,7 @@ data "azurerm_resource_group" "demo" {
 module "Az-AppService-Demo" {
   source                      = "../../" #""JamesDLD/Az-AppService/azurerm"
   app_service_rg              = data.azurerm_resource_group.demo.name
-  app_service_prefix          = "pythonhello"
+  app_service_prefix          = "jdld"
   app_service_location        = data.azurerm_resource_group.demo.location
   app_service_plans           = var.app_service_plans
   app_services                = var.app_services
@@ -96,11 +100,11 @@ module "Az-AppService-Demo" {
 
 
 #Output
-output "asp_ids" {
-  value = module.Az-AppService-Demo.asp_ids
+output "app_service_plans" {
+  value = module.Az-AppService-Demo.app_service_plans
 }
 
-output "apps_ids" {
-  value = module.Az-AppService-Demo.apps_ids
+output "app_service_default_hostnames" {
+  value = module.Az-AppService-Demo.app_service_default_hostnames
 }
 

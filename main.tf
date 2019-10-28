@@ -82,25 +82,26 @@ resource "azurerm_app_service" "apps1" {
 
     }
   }
-/*
+
   dynamic "connection_string" {
     for_each = lookup(each.value, "connection_strings", var.null_array)
     content {
-      name  = lookup(connection_string.value, "", null) #(Required) The name of the Connection String.
-      type  = lookup(connection_string.value, "", null) #(Required) The type of the Connection String. Possible values are APIHub, Custom, DocDb, EventHub, MySQL, NotificationHub, PostgreSQL, RedisCache, ServiceBus, SQLAzure and SQLServer.
-      value = lookup(connection_string.value, "", null) #(Required) The value for the Connection String.
+      name  = lookup(connection_string.value, "name", null)  #(Required) The name of the Connection String.
+      type  = lookup(connection_string.value, "type", null)  #(Required) The type of the Connection String. Possible values are APIHub, Custom, DocDb, EventHub, MySQL, NotificationHub, PostgreSQL, RedisCache, ServiceBus, SQLAzure and SQLServer.
+      value = lookup(connection_string.value, "value", null) #(Required) The value for the Connection String.
     }
   }
 
   client_affinity_enabled = lookup(each.value, "client_affinity_enabled", null) #(Optional) Should the App Service send session affinity cookies, which route client requests in the same session to the same instance?
-  client_cert_enabled     = lookup(each.value, "client_cert_enabled", null) #(Optional) Does the App Service require client certificates for incoming requests? Defaults to false.
-  enabled                 = lookup(each.value, "enabled", null) #(Optional) Is the App Service Enabled?
-  https_only              = lookup(each.value, "https_only", null) #(Optional) Can the App Service only be accessed via HTTPS? Defaults to false.
+  client_cert_enabled     = lookup(each.value, "client_cert_enabled", null)     #(Optional) Does the App Service require client certificates for incoming requests? Defaults to false.
+  enabled                 = lookup(each.value, "enabled", null)                 #(Optional) Is the App Service Enabled?
+  https_only              = lookup(each.value, "https_only", null)              #(Optional) Can the App Service only be accessed via HTTPS? Defaults to false.
 
   logs {
 
+    /* Generates a Terraform crash when empty
     application_logs {
-
+      
       dynamic "azure_blob_storage" {
         for_each = lookup(each.value, "application_logs_azure_blob_storage", var.null_array)
         content {
@@ -111,16 +112,13 @@ resource "azurerm_app_service" "apps1" {
         }
       }
     }
+    */
 
     http_logs {
 
-      dynamic "file_system" {
-        for_each = lookup(each.value, "http_logs_file_system", var.null_array)
-        content {
-          retention_in_days = lookup(file_system.value, "retention_in_days", null) #(Required) The number of days to retain logs for.
-          retention_in_mb   = lookup(file_system.value, "retention_in_mb", null)   #(Required) The maximum size in megabytes that http log files can use before being removed.
-
-        }
+      file_system {
+        retention_in_days = lookup(each.value, "http_logs_file_system", null) == null ? "1" : lookup(each.value["http_logs_file_system"][0], "retention_in_days", "1") #(Required) Default is 1.The number of days to retain logs for.
+        retention_in_mb   = lookup(each.value, "http_logs_file_system", null) == null ? "35" : lookup(each.value["http_logs_file_system"][0], "retention_in_mb", "35") #(Required)  Default is 35. The maximum size in megabytes that http log files can use before being removed.  
       }
 
       dynamic "azure_blob_storage" {
@@ -128,12 +126,12 @@ resource "azurerm_app_service" "apps1" {
         content {
           sas_url           = lookup(azure_blob_storage.value, "sas_url", null)           #(Required) The URL to the storage container, with a Service SAS token appended. NOTE: there is currently no means of generating Service SAS tokens with the azurerm provider.
           retention_in_days = lookup(azure_blob_storage.value, "retention_in_days", null) #(Required) The number of days to retain logs for.
-
         }
       }
+
     }
   }
-*/
+
   dynamic "site_config" {
     for_each = lookup(each.value, "site_config", var.null_array)
     content {
@@ -148,27 +146,27 @@ resource "azurerm_app_service" "apps1" {
         }
       }
       */
-      default_documents         = lookup(site_config.value, "default_documents", null)         #(Optional) The ordering of default documents to load, if an address isn't specified.
-      dotnet_framework_version  = lookup(site_config.value, "dotnet_framework_version", null)  #(Optional) The version of the .net framework's CLR used in this App Service. Possible values are v2.0 (which will use the latest version of the .net framework for the .net CLR v2 = lookup(site_config.value, "", null) #currently .net 3.5) and v4.0 (which corresponds to the latest version of the .net CLR v4 = lookup(site_config.value, "", null) #which at the time of writing is .net 4.7.1). For more information on which .net CLR version to use based on the .net framework you're targeting = lookup(site_config.value, "", null) #please see this table. Defaults to v4.0.
-      ftps_state                = lookup(site_config.value, "ftps_state", null)                #(Optional) State of FTP / FTPS service for this App Service. Possible values include: AllAllowed, FtpsOnly and Disabled.
-      http2_enabled             = lookup(site_config.value, "http2_enabled", null)             #(Optional) Is HTTP2 Enabled on this App Service? Defaults to false.
-      ip_restriction            = lookup(site_config.value, "ip_restriction", null)            #(Optional) A List of objects representing ip restrictions as defined below.
-      java_version              = lookup(site_config.value, "java_version", null)              #(Optional) The version of Java to use. If specified java_container and java_container_version must also be specified. Possible values are 1.7, 1.8 and 11.
-      java_container            = lookup(site_config.value, "java_container", null)            #(Optional) The Java Container to use. If specified java_version and java_container_version must also be specified. Possible values are JETTY and TOMCAT.
-      java_container_version    = lookup(site_config.value, "java_container_version", null)    #(Optional) The version of the Java Container to use. If specified java_version and java_container must also be specified.
-      local_mysql_enabled       = lookup(site_config.value, "local_mysql_enabled", null)       #(Optional) Is "MySQL In App" Enabled? This runs a local MySQL instance with your app and shares resources from the App Service plan.NOTE: MySQL In App is not intended for production environments and will not scale beyond a single instance. Instead you may wish to use Azure Database for MySQL.
-      linux_fx_version          = lookup(site_config.value, "linux_fx_version", null)  == null ? null : lookup(site_config.value, "linux_fx_version_local_file_path", null) == null ? lookup(site_config.value, "linux_fx_version", null) : "${lookup(site_config.value, "linux_fx_version", null)}|${filebase64(lookup(site_config.value, "linux_fx_version_local_file_path", null))}" #(Optional) Linux App Framework and version for the App Service. Possible options are a Docker container (DOCKER|<user/image:tag>), a base-64 encoded Docker Compose file (COMPOSE|${filebase64("compose.yml")}) or a base-64 encoded Kubernetes Manifest (KUBE|${filebase64("kubernetes.yml")}).
-      windows_fx_version        = lookup(site_config.value, "windows_fx_version", null)        #(Optional) The Windows Docker container image (DOCKER|<user/image:tag>)
-      managed_pipeline_mode     = lookup(site_config.value, "managed_pipeline_mode", null)     #(Optional) The Managed Pipeline Mode. Possible values are Integrated and Classic. Defaults to Integrated.
-      min_tls_version           = lookup(site_config.value, "min_tls_version", null)           #(Optional) The minimum supported TLS version for the app service. Possible values are 1.0, 1.1, and 1.2. Defaults to 1.2 for new app services.
-      php_version               = lookup(site_config.value, "php_version", null)               #(Optional) The version of PHP to use in this App Service. Possible values are 5.5, 5.6, 7.0, 7.1 and 7.2.
-      python_version            = lookup(site_config.value, "python_version", null)            #(Optional) The version of Python to use in this App Service. Possible values are 2.7 and 3.4.
-      remote_debugging_enabled  = lookup(site_config.value, "remote_debugging_enabled", null)  #(Optional) Is Remote Debugging Enabled? Defaults to false.
-      remote_debugging_version  = lookup(site_config.value, "remote_debugging_version", null)  #(Optional) Which version of Visual Studio should the Remote Debugger be compatible with? Possible values are VS2012, VS2013, VS2015 and VS2017.
-      scm_type                  = lookup(site_config.value, "scm_type", null)                  #(Optional) The type of Source Control enabled for this App Service. Defaults to None. Possible values are: BitbucketGit, BitbucketHg, CodePlexGit, CodePlexHg, Dropbox, ExternalGit, ExternalHg, GitHub, LocalGit, None, OneDrive, Tfs, VSO and VSTSRM
-      use_32_bit_worker_process = lookup(site_config.value, "use_32_bit_worker_process", null) #(Optional) Should the App Service run in 32 bit mode, rather than 64 bit mode? NOTE: when using an App Service Plan in the Free or Shared Tiers use_32_bit_worker_process must be set to true.
-      virtual_network_name      = lookup(site_config.value, "virtual_network_name", null)      #(Optional) The name of the Virtual Network which this App Service should be attached to.
-      websockets_enabled        = lookup(site_config.value, "websockets_enabled", null)        #(Optional) Should WebSockets be enabled?
+      default_documents         = lookup(site_config.value, "default_documents", null)                                                                                                                                                                                                                                                                                                 #(Optional) The ordering of default documents to load, if an address isn't specified.
+      dotnet_framework_version  = lookup(site_config.value, "dotnet_framework_version", null)                                                                                                                                                                                                                                                                                          #(Optional) The version of the .net framework's CLR used in this App Service. Possible values are v2.0 (which will use the latest version of the .net framework for the .net CLR v2 = lookup(site_config.value, "", null) #currently .net 3.5) and v4.0 (which corresponds to the latest version of the .net CLR v4 = lookup(site_config.value, "", null) #which at the time of writing is .net 4.7.1). For more information on which .net CLR version to use based on the .net framework you're targeting = lookup(site_config.value, "", null) #please see this table. Defaults to v4.0.
+      ftps_state                = lookup(site_config.value, "ftps_state", null)                                                                                                                                                                                                                                                                                                        #(Optional) State of FTP / FTPS service for this App Service. Possible values include: AllAllowed, FtpsOnly and Disabled.
+      http2_enabled             = lookup(site_config.value, "http2_enabled", null)                                                                                                                                                                                                                                                                                                     #(Optional) Is HTTP2 Enabled on this App Service? Defaults to false.
+      ip_restriction            = lookup(site_config.value, "ip_restriction", null)                                                                                                                                                                                                                                                                                                    #(Optional) A List of objects representing ip restrictions as defined below.
+      java_version              = lookup(site_config.value, "java_version", null)                                                                                                                                                                                                                                                                                                      #(Optional) The version of Java to use. If specified java_container and java_container_version must also be specified. Possible values are 1.7, 1.8 and 11.
+      java_container            = lookup(site_config.value, "java_container", null)                                                                                                                                                                                                                                                                                                    #(Optional) The Java Container to use. If specified java_version and java_container_version must also be specified. Possible values are JETTY and TOMCAT.
+      java_container_version    = lookup(site_config.value, "java_container_version", null)                                                                                                                                                                                                                                                                                            #(Optional) The version of the Java Container to use. If specified java_version and java_container must also be specified.
+      local_mysql_enabled       = lookup(site_config.value, "local_mysql_enabled", null)                                                                                                                                                                                                                                                                                               #(Optional) Is "MySQL In App" Enabled? This runs a local MySQL instance with your app and shares resources from the App Service plan.NOTE: MySQL In App is not intended for production environments and will not scale beyond a single instance. Instead you may wish to use Azure Database for MySQL.
+      linux_fx_version          = lookup(site_config.value, "linux_fx_version", null) == null ? null : lookup(site_config.value, "linux_fx_version_local_file_path", null) == null ? lookup(site_config.value, "linux_fx_version", null) : "${lookup(site_config.value, "linux_fx_version", null)}|${filebase64(lookup(site_config.value, "linux_fx_version_local_file_path", null))}" #(Optional) Linux App Framework and version for the App Service. Possible options are a Docker container (DOCKER|<user/image:tag>), a base-64 encoded Docker Compose file (COMPOSE|${filebase64("compose.yml")}) or a base-64 encoded Kubernetes Manifest (KUBE|${filebase64("kubernetes.yml")}).
+      windows_fx_version        = lookup(site_config.value, "windows_fx_version", null)                                                                                                                                                                                                                                                                                                #(Optional) The Windows Docker container image (DOCKER|<user/image:tag>)
+      managed_pipeline_mode     = lookup(site_config.value, "managed_pipeline_mode", null)                                                                                                                                                                                                                                                                                             #(Optional) The Managed Pipeline Mode. Possible values are Integrated and Classic. Defaults to Integrated.
+      min_tls_version           = lookup(site_config.value, "min_tls_version", null)                                                                                                                                                                                                                                                                                                   #(Optional) The minimum supported TLS version for the app service. Possible values are 1.0, 1.1, and 1.2. Defaults to 1.2 for new app services.
+      php_version               = lookup(site_config.value, "php_version", null)                                                                                                                                                                                                                                                                                                       #(Optional) The version of PHP to use in this App Service. Possible values are 5.5, 5.6, 7.0, 7.1 and 7.2.
+      python_version            = lookup(site_config.value, "python_version", null)                                                                                                                                                                                                                                                                                                    #(Optional) The version of Python to use in this App Service. Possible values are 2.7 and 3.4.
+      remote_debugging_enabled  = lookup(site_config.value, "remote_debugging_enabled", null)                                                                                                                                                                                                                                                                                          #(Optional) Is Remote Debugging Enabled? Defaults to false.
+      remote_debugging_version  = lookup(site_config.value, "remote_debugging_version", null)                                                                                                                                                                                                                                                                                          #(Optional) Which version of Visual Studio should the Remote Debugger be compatible with? Possible values are VS2012, VS2013, VS2015 and VS2017.
+      scm_type                  = lookup(site_config.value, "scm_type", null)                                                                                                                                                                                                                                                                                                          #(Optional) The type of Source Control enabled for this App Service. Defaults to None. Possible values are: BitbucketGit, BitbucketHg, CodePlexGit, CodePlexHg, Dropbox, ExternalGit, ExternalHg, GitHub, LocalGit, None, OneDrive, Tfs, VSO and VSTSRM
+      use_32_bit_worker_process = lookup(site_config.value, "use_32_bit_worker_process", null)                                                                                                                                                                                                                                                                                         #(Optional) Should the App Service run in 32 bit mode, rather than 64 bit mode? NOTE: when using an App Service Plan in the Free or Shared Tiers use_32_bit_worker_process must be set to true.
+      virtual_network_name      = lookup(site_config.value, "virtual_network_name", null)                                                                                                                                                                                                                                                                                              #(Optional) The name of the Virtual Network which this App Service should be attached to.
+      websockets_enabled        = lookup(site_config.value, "websockets_enabled", null)                                                                                                                                                                                                                                                                                                #(Optional) Should WebSockets be enabled?
     }
   }
 
@@ -180,5 +178,6 @@ resource "azurerm_app_service" "apps1" {
 
     }
   }
-  tags = lookup(each.value, "", null) #(Optional) A mapping of tags to assign to the resource.
+
+  tags = local.tags
 }
