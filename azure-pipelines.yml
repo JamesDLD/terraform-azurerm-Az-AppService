@@ -67,8 +67,8 @@ stages:
           - template: pipeline/terraform.yml@Yaml_Templates
             parameters:
               version: $(terraform_version)
-              path: "./examples/wordpress_remote_mysql"
-              package_name: "wordpress_remote_mysql"
+              path: "./examples/php_remote_mysql"
+              package_name: "php_remote_mysql"
               terraform_init: true
               terraform_plan: true
               backend_secret_file_id: $(backend_and_main_secret_file_id)
@@ -101,13 +101,19 @@ stages:
                 - template: pipeline/terraform.yml@Yaml_Templates
                   parameters:
                     version: $(terraform_version)
-                    package_name: "wordpress_remote_mysql"
+                    package_name: "php_remote_mysql"
                     terraform_apply: true
                     artifact_path: $(Pipeline.Workspace)/$(artifact_name)
 
                 - task: Bash@3
                   inputs:
-                    filePath: "./examples/wordpress_remote_mysql/az_cli/Publish-AzWebapp.sh"
+                    targetType: "inline"
+                    script: ls
+
+                # - task: Bash@3
+                #   displayName: php_remote_mysql - Deploying WordPress through the Zip Deploy method
+                #   inputs:
+                #     filePath: "./examples/php_remote_mysql/az_cli/Publish-AzWebapp.sh"
 
   - stage: Deliver
     dependsOn: Deploy
@@ -135,10 +141,11 @@ stages:
                     terraform_destroy: true
                     main_secret_file_id: $(backend_and_main_secret_file_id)
                     artifact_path: $(Pipeline.Workspace)/$(artifact_name)
-                # - template: pipeline/terraform.yml@Yaml_Templates
-                #   parameters:
-                #     version: $(terraform_version)
-                #     package_name: "wordpress_remote_mysql"
-                #     terraform_destroy: true
-                #     main_secret_file_id: $(backend_and_main_secret_file_id)
-                #     artifact_path: $(Pipeline.Workspace)/$(artifact_name)
+
+                - template: pipeline/terraform.yml@Yaml_Templates
+                  parameters:
+                    version: $(terraform_version)
+                    package_name: "php_remote_mysql"
+                    terraform_destroy: true
+                    main_secret_file_id: $(backend_and_main_secret_file_id)
+                    artifact_path: $(Pipeline.Workspace)/$(artifact_name)
