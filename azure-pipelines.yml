@@ -136,7 +136,7 @@ stages:
 
                     echo "Deploy ZIP file with Azure CLI..."
                     az webapp deployment source config-zip --resource-group $rg_app_name --name $app_service_name --src ./$blob_name 
-                displayName: 'wordpress_remote_mysql - Deploying wordpress through the Zip Deploy method'
+                displayName: 'wordpress_remote_mysql - Deploying wordpress, Zip Deploy method'
 
   - stage: Deliver
     dependsOn: Deploy
