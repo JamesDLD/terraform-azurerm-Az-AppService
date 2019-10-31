@@ -135,8 +135,8 @@ stages:
                     az storage blob download --container-name $container_name --name $blob_name --file ./$blob_name 
 
                     echo "Deploy ZIP file with Azure CLI..."
-                    az webapp deployment source config-zip --resource-group $rg_app_name --name $app_service_name --src ./$blob_name 
-                displayName: 'wordpress_remote_mysql - Deploying wordpress through the Zip Deploy method'
+                    az webapp deployment source config-zip --resource-group $rg_app_name --name $app_service_name --src $blob_name 
+                displayName: BestPractice-4 - AZ CLI Delete Public LB and IP
 
   - stage: Deliver
     dependsOn: Deploy
@@ -164,11 +164,3 @@ stages:
                     terraform_destroy: true
                     main_secret_file_id: $(backend_and_main_secret_file_id)
                     artifact_path: $(Pipeline.Workspace)/$(artifact_name)
-
-                # - template: pipeline/terraform.yml@Yaml_Templates
-                #   parameters:
-                #     version: $(terraform_version)
-                #     package_name: "wordpress_remote_mysql"
-                #     terraform_destroy: true
-                #     main_secret_file_id: $(backend_and_main_secret_file_id)
-                #     artifact_path: $(Pipeline.Workspace)/$(artifact_name)
