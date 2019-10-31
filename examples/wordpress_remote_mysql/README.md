@@ -1,6 +1,6 @@
 Pipeline test
 -----
-TBD
+[![Build Status](https://dev.azure.com/jamesdld23/vpc_lab/_apis/build/status/Terraform%20module%20Az-AppService?branchName=master)](https://dev.azure.com/jamesdld23/vpc_lab/_build/latest?definitionId=16&branchName=master)
 
 Requirement
 -----
@@ -13,6 +13,7 @@ Inspired from
 2. https://azure.github.io/AppService/2018/11/30/WordPress-on-Linux-Updated.html 
 3. https://azure.microsoft.com/en-us/blog/deploying-wordpress-application-using-vsts-and-azure-part-one/
 4. https://github.com/yaprigal/WordPressVSTS
+5. https://markheath.net/post/run-from-package
 
 ```hcl
 
