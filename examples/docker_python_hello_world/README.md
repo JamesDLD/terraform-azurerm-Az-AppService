@@ -9,11 +9,6 @@ Terraform v0.12.6 and above.
 Usage
 -----
 ```hcl
-#Set the terraform backend
-terraform {
-  backend "local" {}
-}
-
 #Set the Provider
 provider "azurerm" {
   tenant_id       = var.tenant_id
@@ -41,12 +36,17 @@ variable "client_secret" {
 
 #Set resource variables
 
+variable "resource_group" {
+  description = "Resource group where the App Services resources will be created."
+  default     = "apps-jdld-sand1-rg1"
+}
+
 variable "app_service_plans" {
   default = {
 
     asp1 = {
       id       = "1"        #(Mandatory)
-      prefix   = "jdld"     #(Mandatory)
+      prefix   = "hello"    #(Mandatory)
       kind     = "Linux"    #(Optional) The kind of the App Service Plan to create. Possible values are Windows (also available as App), Linux, elastic (for Premium Consumption) and FunctionApp (for a Consumption Plan). Defaults to Windows. Changing this forces a new resource to be created.
       sku_tier = "Standard" #(Required) Specifies the plan's pricing tier.
       sku_size = "S1"       #(Required) Specifies the plan's instance size.
@@ -82,16 +82,19 @@ variable "app_service_additional_tags" {
   }
 }
 
+
 #Prerequisite
 data "azurerm_resource_group" "demo" {
-  name = "gal-jdld-app-sbx-rg1"
+  name = var.resource_group
 }
 
 #Call module/Resource
 module "Az-AppService-Demo" {
-  source                      = "../../../Az-AppService/" #""JamesDLD/Az-AppService/azurerm"
+  source = "git::https://github.com/JamesDLD/terraform-azurerm-Az-AppService.git//?ref=master"
+  #source                      = "../../" 
+  #source                      = "JamesDLD/Az-AppService/azurerm"
   app_service_rg              = data.azurerm_resource_group.demo.name
-  app_service_prefix          = "pythonhello"
+  app_service_prefix          = "jdld"
   app_service_location        = data.azurerm_resource_group.demo.location
   app_service_plans           = var.app_service_plans
   app_services                = var.app_services
@@ -100,12 +103,13 @@ module "Az-AppService-Demo" {
 
 
 #Output
-output "asp_ids" {
-  value = module.Az-AppService-Demo.asp_ids
+output "app_service_plans" {
+  value = module.Az-AppService-Demo.app_service_plans
 }
 
-output "apps_ids" {
-  value = module.Az-AppService-Demo.apps_ids
+output "app_service_default_hostnames" {
+  value = module.Az-AppService-Demo.app_service_default_hostnames
 }
+
 
 ```

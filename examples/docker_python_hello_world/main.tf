@@ -1,10 +1,10 @@
 #Set the terraform backend
 terraform {
   backend "azurerm" {
-    storage_account_name = "jdlddemosa1"
+    storage_account_name = "infrsdbx1vpcjdld1"
     container_name       = "tfstate"
     key                  = "Az-AppService.docker_python_hello_world.tfstate"
-    resource_group_name  = "gal-jdld-infra-sbx-rg1"
+    resource_group_name  = "infr-jdld-noprd-rg1"
   }
 }
 
@@ -37,7 +37,7 @@ variable "client_secret" {
 
 variable "resource_group" {
   description = "Resource group where the App Services resources will be created."
-  default     = "gal-jdld-app-sbx-rg1"
+  default     = "apps-jdld-sand1-rg1"
 }
 
 variable "app_service_plans" {
@@ -89,7 +89,9 @@ data "azurerm_resource_group" "demo" {
 
 #Call module/Resource
 module "Az-AppService-Demo" {
-  source                      = "../../" #""JamesDLD/Az-AppService/azurerm"
+  source = "git::https://github.com/JamesDLD/terraform-azurerm-Az-AppService.git//?ref=master"
+  #source                      = "../../" 
+  #source                      = "JamesDLD/Az-AppService/azurerm"
   app_service_rg              = data.azurerm_resource_group.demo.name
   app_service_prefix          = "jdld"
   app_service_location        = data.azurerm_resource_group.demo.location

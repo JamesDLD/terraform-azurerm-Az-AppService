@@ -70,6 +70,25 @@ resource "azurerm_app_service" "apps1" {
     unauthenticated_client_action = lookup(each.value, "unauthenticated_client_action", null) #(Optional) The action to take when an unauthenticated client attempts to access the app. Possible values are AllowAnonymous and RedirectToLoginPage.
   }
 
+  dynamic "backup" {
+    for_each = lookup(each.value, "backup", [])
+    content {
+      name                = lookup(backup.value, "name", null)                #(Required) Specifies the name for this Backup.
+      enabled             = lookup(backup.value, "enabled", null)             #(Required) Is this Backup enabled?
+      storage_account_url = lookup(backup.value, "storage_account_url", null) #(Optional) The SAS URL to a Storage Container where Backups should be saved.
+      dynamic "schedule" {
+        for_each = lookup(backup.value, "schedule", var.null_array)
+        content {
+          frequency_interval       = lookup(schedule.value, "frequency_interval", null)       #(Required) Sets how often the backup should be executed.
+          frequency_unit           = lookup(schedule.value, "frequency_unit", null)           #(Optional) Sets the unit of time for how often the backup should be executed. Possible values are Day or Hour.
+          keep_at_least_one_backup = lookup(schedule.value, "keep_at_least_one_backup", null) #(Optional) Should at least one backup always be kept in the Storage Account by the Retention Policy, regardless of how old it is?
+          retention_period_in_days = lookup(schedule.value, "retention_period_in_days", null) #(Optional) Specifies the number of days after which Backups should be deleted.
+          start_time               = lookup(schedule.value, "start_time", null)               #(Optional) Sets when the schedule should start working.
+        }
+      }
+    }
+  }
+
   dynamic "storage_account" {
     for_each = lookup(each.value, "storage_accounts", var.null_array)
     content {
@@ -97,38 +116,44 @@ resource "azurerm_app_service" "apps1" {
   enabled                 = lookup(each.value, "enabled", null)                 #(Optional) Is the App Service Enabled?
   https_only              = lookup(each.value, "https_only", null)              #(Optional) Can the App Service only be accessed via HTTPS? Defaults to false.
 
-  logs {
+  dynamic "logs" {
+    for_each = lookup(each.value, "logs", var.null_array)
+    content {
 
-    /* Generates a Terraform crash when empty
-    application_logs {
-      
-      dynamic "azure_blob_storage" {
-        for_each = lookup(each.value, "application_logs_azure_blob_storage", var.null_array)
+      dynamic "application_logs" {
+        for_each = lookup(logs.value, "application_logs", var.null_array)
         content {
-          level             = lookup(azure_blob_storage.value, "level", null)             #(Required) The level at which to log. Possible values include Error, Warning, Information, Verbose and Off. NOTE: this field is not available for http_logs
-          sas_url           = lookup(azure_blob_storage.value, "sas_url", null)           #(Required) The URL to the storage container, with a Service SAS token appended. NOTE: there is currently no means of generating Service SAS tokens with the azurerm provider.
-          retention_in_days = lookup(azure_blob_storage.value, "retention_in_days", null) #(Required) The number of days to retain logs for.
-
-        }
-      }
-    }
-    */
-
-    http_logs {
-
-      file_system {
-        retention_in_days = lookup(each.value, "http_logs_file_system", null) == null ? "1" : lookup(each.value["http_logs_file_system"][0], "retention_in_days", "1") #(Required) Default is 1.The number of days to retain logs for.
-        retention_in_mb   = lookup(each.value, "http_logs_file_system", null) == null ? "35" : lookup(each.value["http_logs_file_system"][0], "retention_in_mb", "35") #(Required)  Default is 35. The maximum size in megabytes that http log files can use before being removed.  
-      }
-
-      dynamic "azure_blob_storage" {
-        for_each = lookup(each.value, "http_logs_azure_blob_storage", var.null_array)
-        content {
-          sas_url           = lookup(azure_blob_storage.value, "sas_url", null)           #(Required) The URL to the storage container, with a Service SAS token appended. NOTE: there is currently no means of generating Service SAS tokens with the azurerm provider.
-          retention_in_days = lookup(azure_blob_storage.value, "retention_in_days", null) #(Required) The number of days to retain logs for.
+          dynamic "azure_blob_storage" {
+            for_each = lookup(application_logs.value, "azure_blob_storage", var.null_array)
+            content {
+              level             = lookup(azure_blob_storage.value, "level", null)             #(Required) The level at which to log. Possible values include Error, Warning, Information, Verbose and Off. NOTE: this field is not available for http_logs
+              sas_url           = lookup(azure_blob_storage.value, "sas_url", null)           #(Required) The URL to the storage container, with a Service SAS token appended. NOTE: there is currently no means of generating Service SAS tokens with the azurerm provider.
+              retention_in_days = lookup(azure_blob_storage.value, "retention_in_days", null) #(Required) The number of days to retain logs for.
+            }
+          }
         }
       }
 
+      dynamic "http_logs" {
+        for_each = lookup(logs.value, "http_logs", var.null_array)
+        content {
+          dynamic "file_system" {
+            for_each = lookup(http_logs.value, "file_system", var.null_array)
+            content {
+              retention_in_days = lookup(file_system.value, "retention_in_days", null) #(Required) Default is 1.The number of days to retain logs for.
+              retention_in_mb   = lookup(file_system.value, "retention_in_mb", null)   #(Required)  Default is 35. The maximum size in megabytes that http log files can use before being removed.  
+            }
+          }
+
+          dynamic "azure_blob_storage" {
+            for_each = lookup(http_logs.value, "azure_blob_storage", var.null_array)
+            content {
+              sas_url           = lookup(azure_blob_storage.value, "sas_url", null)           #(Required) The URL to the storage container, with a Service SAS token appended. NOTE: there is currently no means of generating Service SAS tokens with the azurerm provider.
+              retention_in_days = lookup(azure_blob_storage.value, "retention_in_days", null) #(Required) The number of days to retain logs for.
+            }
+          }
+        }
+      }
     }
   }
 
@@ -137,20 +162,30 @@ resource "azurerm_app_service" "apps1" {
     content {
       always_on        = lookup(site_config.value, "always_on", null)        #(Optional) Should the app be loaded at all times? Defaults to false.
       app_command_line = lookup(site_config.value, "app_command_line", null) #(Optional) App command line to launch, e.g. /sbin/myserver -b 0.0.0.0.
-      /* Work should be done here to support the cors block
+
+      dynamic "ip_restriction" {
+        for_each = lookup(site_config.value, "ip_restriction", var.null_array)
+        content {
+          ip_address                = lookup(ip_restriction.value, "ip_address", null)                #(Optional) The IP Address used for this IP Restriction.
+          subnet_mask               = lookup(ip_restriction.value, "subnet_mask", null)               #(Optional) The Subnet mask used for this IP Restriction. Defaults to 255.255.255.255.
+          virtual_network_subnet_id = lookup(ip_restriction.value, "virtual_network_subnet_id", null) #(Optional.The Virtual Network Subnet ID used for this IP Restriction.
+        }
+      }
+
       dynamic "cors" {
-        for_each = each.value["cors"]
+        for_each = lookup(site_config.value, "cors", var.null_array)
         content {
           allowed_origins     = lookup(cors.value, "allowed_origins", null)     #(Optional) A list of origins which should be able to make cross-origin calls. * can be used to allow all calls.
           support_credentials = lookup(cors.value, "support_credentials", null) #(Optional) Are credentials supported?
         }
       }
-      */
-      default_documents         = lookup(site_config.value, "default_documents", null)                                                                                                                                                                                                                                                                                                 #(Optional) The ordering of default documents to load, if an address isn't specified.
-      dotnet_framework_version  = lookup(site_config.value, "dotnet_framework_version", null)                                                                                                                                                                                                                                                                                          #(Optional) The version of the .net framework's CLR used in this App Service. Possible values are v2.0 (which will use the latest version of the .net framework for the .net CLR v2 = lookup(site_config.value, "", null) #currently .net 3.5) and v4.0 (which corresponds to the latest version of the .net CLR v4 = lookup(site_config.value, "", null) #which at the time of writing is .net 4.7.1). For more information on which .net CLR version to use based on the .net framework you're targeting = lookup(site_config.value, "", null) #please see this table. Defaults to v4.0.
-      ftps_state                = lookup(site_config.value, "ftps_state", null)                                                                                                                                                                                                                                                                                                        #(Optional) State of FTP / FTPS service for this App Service. Possible values include: AllAllowed, FtpsOnly and Disabled.
-      http2_enabled             = lookup(site_config.value, "http2_enabled", null)                                                                                                                                                                                                                                                                                                     #(Optional) Is HTTP2 Enabled on this App Service? Defaults to false.
-      ip_restriction            = lookup(site_config.value, "ip_restriction", null)                                                                                                                                                                                                                                                                                                    #(Optional) A List of objects representing ip restrictions as defined below.
+
+      default_documents        = lookup(site_config.value, "default_documents", null)        #(Optional) The ordering of default documents to load, if an address isn't specified.
+      dotnet_framework_version = lookup(site_config.value, "dotnet_framework_version", null) #(Optional) The version of the .net framework's CLR used in this App Service. Possible values are v2.0 (which will use the latest version of the .net framework for the .net CLR v2 = lookup(site_config.value, "", null) #currently .net 3.5) and v4.0 (which corresponds to the latest version of the .net CLR v4 = lookup(site_config.value, "", null) #which at the time of writing is .net 4.7.1). For more information on which .net CLR version to use based on the .net framework you're targeting = lookup(site_config.value, "", null) #please see this table. Defaults to v4.0.
+      ftps_state               = lookup(site_config.value, "ftps_state", null)               #(Optional) State of FTP / FTPS service for this App Service. Possible values include: AllAllowed, FtpsOnly and Disabled.
+      http2_enabled            = lookup(site_config.value, "http2_enabled", null)            #(Optional) Is HTTP2 Enabled on this App Service? Defaults to false.
+
+      #(Optional) A List of objects representing ip restrictions as defined below.
       java_version              = lookup(site_config.value, "java_version", null)                                                                                                                                                                                                                                                                                                      #(Optional) The version of Java to use. If specified java_container and java_container_version must also be specified. Possible values are 1.7, 1.8 and 11.
       java_container            = lookup(site_config.value, "java_container", null)                                                                                                                                                                                                                                                                                                    #(Optional) The Java Container to use. If specified java_version and java_container_version must also be specified. Possible values are JETTY and TOMCAT.
       java_container_version    = lookup(site_config.value, "java_container_version", null)                                                                                                                                                                                                                                                                                            #(Optional) The version of the Java Container to use. If specified java_version and java_container must also be specified.

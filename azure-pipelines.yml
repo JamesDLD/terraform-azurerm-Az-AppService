@@ -1,23 +1,23 @@
 #Multi-stage YAML pipeline demo.
 name: $(BuildDefinitionName).$(DayOfYear)$(Rev:.r)
 
-trigger: none
+#trigger: none
 
-# schedules:
-#   - cron: "45 8 * * 4"
-#     branches:
-#       include:
-#         - master
-#     displayName: Weekly Thursday 8h45 am UTC build
-#     always: true
+schedules:
+  - cron: "45 8 * * 4"
+    branches:
+      include:
+        - master
+    displayName: Weekly Thursday 8h45 am UTC build
+    always: true
 
 variables:
   - name: vmImageName
     value: "ubuntu-latest"
   - name: terraform_version
-    value: "0.12.8"
+    value: "0.12.12"
   - name: artifact_name
-    value: Az-VirtualNetwork
+    value: Az-AppService
   - name: backend_and_main_secret_file_id
     value: "backend-main-jdld-1.json"
 
@@ -51,8 +51,8 @@ stages:
           - template: pipeline/terraform.yml@Yaml_Templates
             parameters:
               version: $(terraform_version)
-              path: "./examples/complete"
-              package_name: "complete"
+              path: "./examples/docker_python_hello_world"
+              package_name: "docker_python_hello_world"
               terraform_init: true
               terraform_plan: true
               backend_secret_file_id: $(backend_and_main_secret_file_id)
@@ -78,7 +78,7 @@ stages:
                 - template: pipeline/terraform.yml@Yaml_Templates
                   parameters:
                     version: $(terraform_version)
-                    package_name: "complete"
+                    package_name: "docker_python_hello_world"
                     terraform_apply: true
                     artifact_path: $(Pipeline.Workspace)/$(artifact_name)
 
@@ -104,7 +104,7 @@ stages:
                 - template: pipeline/terraform.yml@Yaml_Templates
                   parameters:
                     version: $(terraform_version)
-                    package_name: "complete"
+                    package_name: "docker_python_hello_world"
                     terraform_destroy: true
                     main_secret_file_id: $(backend_and_main_secret_file_id)
                     artifact_path: $(Pipeline.Workspace)/$(artifact_name)

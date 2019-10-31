@@ -1,14 +1,11 @@
 #Set the terraform backend
 terraform {
-  backend "local" {}
-  /*
   backend "azurerm" {
-    storage_account_name = "jdlddemosa1"
+    storage_account_name = "infrsdbx1vpcjdld1"
     container_name       = "tfstate"
-    key                  = "Az-AppService.docker_compose_wordpress.tfstate"
-    resource_group_name  = "gal-jdld-infra-sbx-rg1"
+    key                  = "Az-AppService.wordpress_remote_mysql.tfstate"
+    resource_group_name  = "infr-jdld-noprd-rg1"
   }
-  */
 }
 
 #Set the Provider
@@ -40,7 +37,7 @@ variable "client_secret" {
 
 variable "rg_name" {
   description = "Resource group name where the resources will be managed."
-  default     = "gal-jdld-app-sbx-rg1"
+  default     = "apps-jdld-sand1-rg1"
 }
 
 variable "app_service_plans" {
@@ -65,17 +62,10 @@ variable "app_services" {
       prefix               = "sdbxwordpress" #(Required) Specifies the name of the App Service. Changing this forces a new resource to be created.
       app_service_plan_key = "asp1"          #(Required) The Key from azurerm_app_service_plan map the  of the App Service Plan within which to create this App Service.
       db_name              = "demo_wordpress"
+
       site_config = [
         {
           linux_fx_version = "PHP|7.3" #(Optional) Linux App Framework and version for the App Service. Possible options are a Docker container (DOCKER|<user/image:tag>), a base-64 encoded Docker Compose file (COMPOSE|${filebase64("compose.yml")}) or a base-64 encoded Kubernetes Manifest (KUBE|${filebase64("kubernetes.yml")}).
-        },
-      ]
-
-      connection_string = [
-        {
-          name  = "ado_db1"
-          type  = "MySql"
-          value = "Server=demo-jdld-mysql1.mysql.database.azure.com; Port=3306; Database=demo_wordpress; Uid=mysqladminun; Pwd=HaSh1CoR3!; SslMode=Preferred;"
         },
       ]
 
@@ -86,6 +76,7 @@ variable "app_services" {
         "DATABASE_PASSWORD" = "HaSh1CoR3!"
         "MYSQL_SSL_CA"      = "BaltimoreCyberTrustRoot.crt.pem"
       } #(Optional) A key-value pair of App Settings.
+
     }
   }
 }
@@ -97,9 +88,11 @@ data "azurerm_resource_group" "demo" {
 
 #Call module/Resource
 module "Az-AppService-Demo" {
-  source                      = "../../" #""JamesDLD/Az-AppService/azurerm"
+  source = "git::https://github.com/JamesDLD/terraform-azurerm-Az-AppService.git//?ref=master"
+  #source                      = "../../" 
+  #source                      = "JamesDLD/Az-AppService/azurerm"
   app_service_rg              = data.azurerm_resource_group.demo.name
-  app_service_prefix          = "jdlddemo"
+  app_service_prefix          = "wp"
   app_service_location        = data.azurerm_resource_group.demo.location
   app_service_plans           = var.app_service_plans
   app_services                = var.app_services
@@ -112,9 +105,9 @@ resource "azurerm_mysql_server" "demo" {
   resource_group_name = data.azurerm_resource_group.demo.name
 
   sku {
-    name     = "B_Gen5_2"
+    name     = "GP_Gen5_2" #"B_Gen5_2"
     capacity = 2
-    tier     = "Basic"
+    tier     = "GeneralPurpose" #"Basic" #NOTE: MySQL Virtual Network Rules can only be used with SKU Tiers of GeneralPurpose or MemoryOptimized
     family   = "Gen5"
   }
 
@@ -141,7 +134,7 @@ resource "azurerm_mysql_database" "wordpress_dbs" {
 }
 
 resource "azurerm_mysql_firewall_rule" "outbound_ip_addresses" {
-  count               = 5 #length(split(",", module.Az-AppService-Demo.app_services[0].outbound_ip_addresses))
+  count               = 5
   name                = "outbound_ip_addresses${count.index}"
   resource_group_name = data.azurerm_resource_group.demo.name
   server_name         = azurerm_mysql_server.demo.name
@@ -150,7 +143,7 @@ resource "azurerm_mysql_firewall_rule" "outbound_ip_addresses" {
 }
 
 resource "azurerm_mysql_firewall_rule" "possible_outbound_ip_addresses" {
-  count               = 10 #length(split(",", module.Az-AppService-Demo.app_services[0].possible_outbound_ip_addresses))
+  count               = 10
   name                = "possible_outbound_ip_addresses${count.index}"
   resource_group_name = data.azurerm_resource_group.demo.name
   server_name         = azurerm_mysql_server.demo.name
@@ -159,10 +152,6 @@ resource "azurerm_mysql_firewall_rule" "possible_outbound_ip_addresses" {
 }
 
 #Output
-
-output "app_service_site_credential" {
-  value = [for x in module.Az-AppService-Demo.app_services : x.site_credential]
-}
 
 output "app_service_default_hostnames" {
   value = module.Az-AppService-Demo.app_service_default_hostnames
