@@ -132,7 +132,8 @@ resource "azurerm_mysql_database" "wordpress_dbs" {
   charset             = "utf8"
   collation           = "utf8_unicode_ci"
 }
-
+/*
+Currently generating a bug with "provider.azurerm v1.36.1" when using the Terraform Destroy cmdlet
 resource "azurerm_mysql_firewall_rule" "outbound_ip_addresses" {
   count               = 5
   name                = "outbound_ip_addresses${count.index}"
@@ -150,7 +151,7 @@ resource "azurerm_mysql_firewall_rule" "possible_outbound_ip_addresses" {
   start_ip_address    = element(split(",", module.Az-AppService-Demo.app_services[0].possible_outbound_ip_addresses), count.index)
   end_ip_address      = element(split(",", module.Az-AppService-Demo.app_services[0].possible_outbound_ip_addresses), count.index)
 }
-
+*/
 #Output
 
 output "app_service_default_hostnames" {
