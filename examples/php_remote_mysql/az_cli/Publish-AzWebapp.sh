@@ -1,7 +1,7 @@
 #Variable
 backend_secret_file_id_path="$(Agent.TempDirectory)/$(backend_main_secret_file_id1)"
 rg_infra_name="infr-jdld-noprd-rg1"
-sa_name="infrsdbx1vpcjdld1"
+sa_name="infrasdbx1vpcjdld1"
 rg_app_name="apps-jdld-sand1-rg1"
 app_service_name="wp-sdbxwordpress-apps1"
 container_name="bin"

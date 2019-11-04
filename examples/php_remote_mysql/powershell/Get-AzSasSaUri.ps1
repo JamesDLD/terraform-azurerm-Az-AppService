@@ -4,7 +4,7 @@
 #                                 Variable
 ################################################################################
 $ResourceGroupName = "infr-jdld-noprd-rg1"
-$SaName = "infrsdbx1vpcjdld1"
+$SaName = "infrasdbx1vpcjdld1"
 $CtName="appsbck1"
 $CtName="bin"
 ################################################################################
@@ -31,5 +31,5 @@ $SASToken = New-AzStorageBlobSASToken -context $storageAccount.context -Containe
 
 #Print the SAS URL
 Write-output "SAS URL = $($Ct.Context.BlobEndPoint)$($Ct.Name)/$($BlobName)$($SASToken)"
-#Sample usage => "WEBSITE_RUN_FROM_PACKAGE" = "https://infrsdbx1vpcjdld1.blob.core.windows.net/bin/wordpress_db_ssl_conn_via_env_var.zip?sv=2019-02-02&sr=b&sig=htOU9snrc2Xlokq2j0EPBuBqvMHgBz18zvZiQDKqyLM%3D&se=2019-10-31T15%3A08%3A20Z&sp=r"
+#Sample usage => "WEBSITE_RUN_FROM_PACKAGE" = "https://infrasdbx1vpcjdld1.blob.core.windows.net/bin/wordpress_db_ssl_conn_via_env_var.zip?sv=2019-02-02&sr=b&sig=htOU9snrc2Xlokq2j0EPBuBqvMHgBz18zvZiQDKqyLM%3D&se=2019-10-31T15%3A08%3A20Z&sp=r"
 

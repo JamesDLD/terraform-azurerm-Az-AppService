@@ -16,6 +16,10 @@ Inspired from
 5. https://markheath.net/post/run-from-package
 
 ```hcl
+#Set the terraform backend
+terraform {
+  backend "local" {} #Using a local backend just for the demo, the reco is to use a remote backend, see : https://jamesdld.github.io/terraform/Best-Practice/BestPractice-1/
+}
 
 #Set the Provider
 provider "azurerm" {
