@@ -18,5 +18,5 @@ Examples
 -----
 | Name | Description |
 |------|-------------|
-| docker_python_hello_world | Create an App Service Plan with an App Service using the [Puthon Hello world docker image](https://hub.docker.com/r/appsvcsample/python-helloworld). |
+| docker_python_hello_world | Create an App Service Plan with an App Service using the [Python Hello world docker image](https://hub.docker.com/r/appsvcsample/python-helloworld). |
 | php_remote_mysql | Get an existing App Service Plan, create an App Service with environment variables to connect through SSL on an Azure MySQL Database. |
