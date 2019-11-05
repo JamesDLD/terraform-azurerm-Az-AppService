@@ -16,6 +16,12 @@ locals {
   tags     = merge(var.app_service_additional_tags, data.azurerm_resource_group.rg.tags)
 }
 
+data "azurerm_app_service_plan" "asp1" {
+  for_each            = var.existing_app_service_plans
+  name                = each.value["name"]
+  resource_group_name = lookup(each.value, "resource_group_name", data.azurerm_resource_group.rg.name)
+}
+
 # -
 # - App Service Plan
 # -
@@ -48,11 +54,11 @@ resource "azurerm_app_service_plan" "asp1" {
 
 resource "azurerm_app_service" "apps1" {
   for_each            = var.app_services
-  name                = "${var.app_service_prefix}-${each.value["prefix"]}-apps${each.value["id"]}"     #(Required) Specifies the name of the App Service. Changing this forces a new resource to be created.
-  resource_group_name = data.azurerm_resource_group.rg.name                                             #(Required) The name of the resource group in which to create the App Service.
-  location            = local.location                                                                  #(Required) Specifies the supported Azure location where the resource exists. Changing this forces a new resource to be created.
-  app_service_plan_id = lookup(azurerm_app_service_plan.asp1, each.value["app_service_plan_key"])["id"] #(Required) The ID of the App Service Plan within which to create this App Service.
-  app_settings        = lookup(each.value, "app_settings", null)                                        #(Optional) A key-value pair of App Settings.
+  name                = "${var.app_service_prefix}-${each.value["prefix"]}-apps${each.value["id"]}"                                                #(Required) Specifies the name of the App Service. Changing this forces a new resource to be created.
+  resource_group_name = data.azurerm_resource_group.rg.name                                                                                        #(Required) The name of the resource group in which to create the App Service.
+  location            = local.location                                                                                                             #(Required) Specifies the supported Azure location where the resource exists. Changing this forces a new resource to be created.
+  app_service_plan_id = lookup(merge(azurerm_app_service_plan.asp1, data.azurerm_app_service_plan.asp1), each.value["app_service_plan_key"])["id"] #(Required) The ID of the App Service Plan within which to create this App Service.
+  app_settings        = lookup(each.value, "app_settings", null)                                                                                   #(Optional) A key-value pair of App Settings.
   auth_settings {
     enabled = lookup(each.value, "enabled", false) #(Required) Is Authentication enabled?
     #active_directory {}

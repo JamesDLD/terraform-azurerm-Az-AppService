@@ -31,6 +31,13 @@ variable "app_service_plans" {
   type        = any
 }
 
+variable "existing_app_service_plans" {
+  description = "Existing App Services plans."
+  type        = any
+  default     = {}
+}
+
+
 variable "app_services" {
   description = "The App Services with their properties."
   type        = any

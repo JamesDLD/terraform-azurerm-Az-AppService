@@ -95,9 +95,8 @@ data "azurerm_resource_group" "demo" {
 
 #Call module/Resource
 module "Az-AppService-Demo" {
-  source = "git::https://github.com/JamesDLD/terraform-azurerm-Az-AppService.git//?ref=master"
-  #source                      = "../../" 
-  #source                      = "JamesDLD/Az-AppService/azurerm"
+  source                      = "JamesDLD/Az-AppService/azurerm"
+  version                     = "0.1.0"
   app_service_rg              = data.azurerm_resource_group.demo.name
   app_service_prefix          = "jdld"
   app_service_location        = data.azurerm_resource_group.demo.location
@@ -115,6 +114,5 @@ output "app_service_plans" {
 output "app_service_default_hostnames" {
   value = module.Az-AppService-Demo.app_service_default_hostnames
 }
-
 
 ```
