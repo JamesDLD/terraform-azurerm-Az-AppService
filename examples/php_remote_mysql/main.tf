@@ -56,13 +56,14 @@ variable "app_service_plans" {
 
 variable "existing_app_service_plans" {
   default = {
+    /* The following code get an existing app service plann this is commented for demo purpose.
     asp2 = {
       name                = "jdld-hello-asp1"     #(Optional) Existing App Service Plan name
       resource_group_name = "apps-jdld-sand1-rg1" #(Optional) Existing App Service Plan name, take the App Service Rg if not provided
     }
+    */
   }
 }
-
 
 variable "app_services" {
   default = {
@@ -70,7 +71,7 @@ variable "app_services" {
     wordpress_sample = {
       id                   = "1"             #(Required)
       prefix               = "sdbxwordpress" #(Required) Specifies the name of the App Service. Changing this forces a new resource to be created.
-      app_service_plan_key = "asp2"          #(Required) The Key from azurerm_app_service_plan map the  of the App Service Plan within which to create this App Service.
+      app_service_plan_key = "asp1"          #(Required) The Key from azurerm_app_service_plan map the  of the App Service Plan within which to create this App Service.
       db_name              = "demo_wordpress"
 
       site_config = [
@@ -105,7 +106,7 @@ module "Az-AppService-Demo" {
   app_service_rg              = data.azurerm_resource_group.demo.name
   app_service_prefix          = "wp"
   app_service_location        = data.azurerm_resource_group.demo.location
-  app_service_plans           = {}
+  app_service_plans           = var.app_service_plans
   app_services                = var.app_services
   app_service_additional_tags = {}
   existing_app_service_plans  = var.existing_app_service_plans
