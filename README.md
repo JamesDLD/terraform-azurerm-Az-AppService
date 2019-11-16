@@ -6,6 +6,8 @@ Requirement
 -----
 Terraform v0.12.6 and above. 
 
+Terraform resources used within the module
+-----
 | Resource | Description |
 |------|-------------|
 | [azurerm_resource_group](https://www.terraform.io/docs/providers/azurerm/d/resource_group.html) | Get the Resource Group, re use it's tags for the sub resources. |
