@@ -104,7 +104,7 @@ module "Az-AppService-Demo" {
   source = "git::https://github.com/JamesDLD/terraform-azurerm-Az-AppService.git//?ref=master"
   #source = "../../"
   #source                      = "JamesDLD/Az-AppService/azurerm"
-  #version                     = "0.1.0"
+  #version                     = "0.2.0"
   app_service_rg              = data.azurerm_resource_group.demo.name
   app_service_prefix          = "wp"
   app_service_location        = data.azurerm_resource_group.demo.location

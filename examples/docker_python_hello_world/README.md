@@ -2,9 +2,16 @@ Pipeline test
 -----
 [![Build Status](https://dev.azure.com/jamesdld23/vpc_lab/_apis/build/status/Terraform%20module%20Az-AppService?branchName=master)](https://dev.azure.com/jamesdld23/vpc_lab/_build/latest?definitionId=16&branchName=master)
 
+
+Content
+-----
+Create an App Service Plan with an App Service using the [Python Hello world docker image](https://hub.docker.com/r/appsvcsample/python-helloworld).
+
+
 Requirement
 -----
-Terraform v0.12.6 and above. 
+- Terraform v0.12.23 and above. 
+- AzureRm provider version 2.1 and above.
 
 Usage
 -----
@@ -20,6 +27,8 @@ provider "azurerm" {
   subscription_id = var.subscription_id
   client_id       = var.client_id
   client_secret   = var.client_secret
+  version         = "~> 2.0"
+  features {}
 }
 
 #Set authentication variables
@@ -83,7 +92,7 @@ variable "app_services" {
 
 variable "app_service_additional_tags" {
   default = {
-    iac = "terraform"
+    hello = "world"
   }
 }
 
@@ -96,7 +105,7 @@ data "azurerm_resource_group" "demo" {
 #Call module/Resource
 module "Az-AppService-Demo" {
   source                      = "JamesDLD/Az-AppService/azurerm"
-  version                     = "0.1.0"
+  version                     = "0.2.0"
   app_service_rg              = data.azurerm_resource_group.demo.name
   app_service_prefix          = "jdld"
   app_service_location        = data.azurerm_resource_group.demo.location
@@ -111,8 +120,8 @@ output "app_service_plans" {
   value = module.Az-AppService-Demo.app_service_plans
 }
 
-output "app_service_default_hostnames" {
-  value = module.Az-AppService-Demo.app_service_default_hostnames
+output "app_services" {
+  value = module.Az-AppService-Demo.app_services
 }
 
 ```
