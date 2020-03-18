@@ -1,11 +1,18 @@
+Pipeline test
+-----
+[![Build Status](https://dev.azure.com/jamesdld23/vpc_lab/_apis/build/status/Terraform%20module%20Az-AppService?branchName=master)](https://dev.azure.com/jamesdld23/vpc_lab/_build/latest?definitionId=16&branchName=master)
+
+Requirement
+-----
+Terraform v0.12.6 and above. 
+
+Usage
+-----
+
+```hcl
 #Set the terraform backend
 terraform {
-  backend "azurerm" {
-    storage_account_name = "infrasdbx1vpcjdld1"
-    container_name       = "tfstate"
-    key                  = "Az-AppService.wordpress_remote_mysql.tfstate"
-    resource_group_name  = "infr-jdld-noprd-rg1"
-  }
+  backend "local" {} #Using a local backend just for the demo, the reco is to use a remote backend, see : https://jamesdld.github.io/terraform/Best-Practice/BestPractice-1/
 }
 
 #Set the Provider
@@ -14,8 +21,6 @@ provider "azurerm" {
   subscription_id = var.subscription_id
   client_id       = var.client_id
   client_secret   = var.client_secret
-  version         = "~> 2.0"
-  features {}
 }
 
 #Set authentication variables
@@ -58,14 +63,13 @@ variable "app_service_plans" {
 
 variable "existing_app_service_plans" {
   default = {
-    /* The following code get an existing app service plann this is commented for demo purpose.
     asp2 = {
       name                = "jdld-hello-asp1"     #(Optional) Existing App Service Plan name
       resource_group_name = "apps-jdld-sand1-rg1" #(Optional) Existing App Service Plan name, take the App Service Rg if not provided
     }
-    */
   }
 }
+
 
 variable "app_services" {
   default = {
@@ -73,7 +77,7 @@ variable "app_services" {
     wordpress_sample = {
       id                   = "1"             #(Required)
       prefix               = "sdbxwordpress" #(Required) Specifies the name of the App Service. Changing this forces a new resource to be created.
-      app_service_plan_key = "asp1"          #(Required) The Key from azurerm_app_service_plan map the  of the App Service Plan within which to create this App Service.
+      app_service_plan_key = "asp2"          #(Required) The Key from azurerm_app_service_plan map the  of the App Service Plan within which to create this App Service.
       db_name              = "demo_wordpress"
 
       site_config = [
@@ -101,14 +105,12 @@ data "azurerm_resource_group" "demo" {
 
 #Call module/Resource
 module "Az-AppService-Demo" {
-  source = "git::https://github.com/JamesDLD/terraform-azurerm-Az-AppService.git//?ref=master"
-  #source = "../../"
-  #source                      = "JamesDLD/Az-AppService/azurerm"
-  #version                     = "0.1.0"
+  source                      = "JamesDLD/Az-AppService/azurerm"
+  version                     = "0.1.0"
   app_service_rg              = data.azurerm_resource_group.demo.name
   app_service_prefix          = "wp"
   app_service_location        = data.azurerm_resource_group.demo.location
-  app_service_plans           = var.app_service_plans
+  app_service_plans           = {}
   app_services                = var.app_services
   app_service_additional_tags = {}
   existing_app_service_plans  = var.existing_app_service_plans
@@ -119,7 +121,12 @@ resource "azurerm_mysql_server" "demo" {
   location            = data.azurerm_resource_group.demo.location
   resource_group_name = data.azurerm_resource_group.demo.name
 
-  sku_name = "GP_Gen5_2" #"B_Gen5_2"
+  sku {
+    name     = "GP_Gen5_2" #"B_Gen5_2"
+    capacity = 2
+    tier     = "GeneralPurpose" #"Basic" #NOTE: MySQL Virtual Network Rules can only be used with SKU Tiers of GeneralPurpose or MemoryOptimized
+    family   = "Gen5"
+  }
 
   storage_profile {
     storage_mb            = 5120
@@ -142,8 +149,8 @@ resource "azurerm_mysql_database" "wordpress_dbs" {
   charset             = "utf8"
   collation           = "utf8_unicode_ci"
 }
-/*
-Currently generating a bug with "provider.azurerm v1.36.1" when using the Terraform Destroy cmdlet
+
+#Currently generating a bug with "provider.azurerm v1.36.1" when using the Terraform Destroy cmdlet
 resource "azurerm_mysql_firewall_rule" "outbound_ip_addresses" {
   count               = 5
   name                = "outbound_ip_addresses${count.index}"
@@ -161,10 +168,11 @@ resource "azurerm_mysql_firewall_rule" "possible_outbound_ip_addresses" {
   start_ip_address    = element(split(",", module.Az-AppService-Demo.app_services[0].possible_outbound_ip_addresses), count.index)
   end_ip_address      = element(split(",", module.Az-AppService-Demo.app_services[0].possible_outbound_ip_addresses), count.index)
 }
-*/
+
 #Output
 
-output "app_services" {
-  value = module.Az-AppService-Demo.app_services
+output "app_service_default_hostnames" {
+  value = module.Az-AppService-Demo.app_service_default_hostnames
 }
 
+```

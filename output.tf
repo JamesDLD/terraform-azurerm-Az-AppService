@@ -2,28 +2,17 @@
 # - App Service 
 # -
 
-output "app_service_plans" {
-  value = [for x in azurerm_app_service_plan.asp1 : {
-    id                        = lookup(x, "id", null)                        #The ID of the App Service Plan component.
-    maximum_number_of_workers = lookup(x, "maximum_number_of_workers", null) #The maximum number of workers supported with the App Service Plan's sku.
-    }
-  ]
-}
-
 output "app_services" {
-  value = [for x in azurerm_app_service.apps1 : {
-    id                             = lookup(x, "id", null)                             #The ID of the App Service.
-    default_site_hostname          = lookup(x, "default_site_hostname", null)          #The Default Hostname associated with the App Service - such as mysite.azurewebsites.net
-    outbound_ip_addresses          = lookup(x, "outbound_ip_addresses", null)          #A comma separated list of outbound IP addresses - such as 52.23.25.3,52.143.43.12
-    possible_outbound_ip_addresses = lookup(x, "possible_outbound_ip_addresses", null) #A comma separated list of outbound IP addresses - such as 52.23.25.3,52.143.43.12,52.143.43.17 - not all of which are necessarily in use. Superset of outbound_ip_addresses.
-    source_control                 = lookup(x, "source_control", null)                 #A source_control block as defined below, which contains the Source Control information when scm_type is set to LocalGit.
-    site_credential                = lookup(x, "site_credential", null)                #A site_credential block as defined below, which contains the site-level credentials used to publish to this App Service.
-    identity                       = lookup(x, "identity", null)                       #An identity block as defined below, which contains the Managed Service Identity information for this App Service.
-  }]
+  description = "Map output of the App Services"
+  value       = { for k, b in azurerm_app_service.apps1 : k => b }
 }
 
-output "app_service_default_hostnames" {
-  value = [for x in azurerm_app_service.apps1 : {
-    default_site_hostname = "https://${lookup(x, "default_site_hostname", null)}" #The Default Hostname associated with the App Service - such as mysite.azurewebsites.net
-  }]
+# -
+# - App Service - Map outputs
+# -
+
+output "app_service_plans" {
+  description = "Map output of the App Service Plans"
+  value       = { for k, b in azurerm_app_service_plan.asp1 : k => b }
 }
+
